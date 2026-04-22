@@ -2,21 +2,12 @@ import pytest
 from pytest_bdd import scenarios, given, when, then, parsers
 from calculator import add, subtract, multiply, divide
 
-# Link all scenarios in the feature file
 scenarios("calculator.feature")
 
-# ── Fixtures (shared state between steps) ──
-@pytest.fixture
-def context():
-    """Holds numbers and result across Given/When/Then."""
-    return {}
-
 # ── Given steps ──
-@given(parsers.parse('I have the numbers {a:d} and {b:d}'))
-def set_numbers(context, a, b):
-    context["a"] = a
-    context["b"] = b
-    context["error"] = None
+@given(parsers.parse('I have the numbers {a:d} and {b:d}'), target_fixture="context")
+def set_numbers(a, b):
+    return {"a": a, "b": b, "error": None, "result": None}
 
 # ── When steps ──
 @when('I add them')
@@ -39,9 +30,9 @@ def when_divide(context):
         context["error"] = e
 
 # ── Then steps ──
-@then(parsers.parse('the result should be {expected:f}'))
+@then(parsers.parse('the result should be {expected:g}'))
 def check_result(context, expected):
-    assert context["result"] == expected
+    assert context["result"] == pytest.approx(expected)
 
 @then('a ValueError should be raised')
 def check_error(context):
